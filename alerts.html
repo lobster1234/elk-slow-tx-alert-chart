@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>ELK Slow Transaction Alert Chart</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.js"></script>
+</head>
+<body>
+<h3> Enter the ELK Slow Transaction Alert Details here</h3>
+<textarea name = "tx" id = "tx" rows="10" cols="100"></textarea>
+<a href="javascript:chart()"> Click here </a>
+<script>
+
+function labels(data){
+  var lines = data.split("\n");
+  var labels = new Array();
+  for(i=0; i <lines.length; i++){
+    if(lines[i].trim().length>0){
+      var label = lines[i].trim().split(" ")[0];
+      labels.push(label);
+    }
+  }
+  return labels;
+}
+
+function values(data){
+  var lines = data.split("\n");
+  var values = new Array();
+  for(i=0; i <lines.length; i++){
+    if(lines[i].trim().length>0){
+      var value = parseFloat(lines[i].split("[")[1].slice(0,-1).split("/")[0]);
+      values.push(value);
+    }
+  }
+  return values;
+}
+
+</script>
+<canvas id="myChart" width="350" height="200"></canvas>
+<script>
+function chart(){
+var preprocess = document.getElementById("tx").value;
+var input = preprocess.substring(preprocess.lastIndexOf("<profiler>")+10, preprocess.lastIndexOf("</profiler>"));
+var ctx = document.getElementById("myChart");
+var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels(input),
+        datasets: [{
+            label: 'Milliseconds',
+            data: values(input),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+}
+</script>
+</body>
+</html>
