@@ -4,9 +4,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.js"></script>
 </head>
 <body>
-<h3> Enter the ELK Slow Transaction Alert Details here</h3>
+<h3> Paste the ELK Alert Email below: </h3>
 <textarea name = "tx" id = "tx" rows="10" cols="100"></textarea>
-<a href="javascript:chart()"> Click here </a>
+<input type="radio" name="typ" id="line" value="line" checked> Line
+<input type="radio" name="typ" id="bar" value="bar"> Bar
+<a href="javascript:chart()">Visualize!</a>
 <script>
 
 function labels(data){
@@ -42,6 +44,39 @@ var input = preprocess.substring(preprocess.lastIndexOf("<profiler>")+10, prepro
 var ctx = document.getElementById("myChart");
 var myChart = new Chart(ctx, {
     type: 'line',
+    data: {
+        labels: labels(input),
+        datasets: [{
+            label: 'Milliseconds',
+            data: values(input),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+myChart.destroy(); //This is such an ugly hack, but I am a n00b
+var typ = "line";
+if(document.getElementById("bar").checked){
+  typ = "bar";
+}
+var ctx = document.getElementById("myChart");
+var myChart = new Chart(ctx, {
+    type: typ,
     data: {
         labels: labels(input),
         datasets: [{
