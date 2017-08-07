@@ -38,44 +38,23 @@ function values(data){
 </script>
 <canvas id="myChart" width="350" height="200"></canvas>
 <script>
+
+var myChart;
+
 function chart(){
 var preprocess = document.getElementById("tx").value;
 var input = preprocess.substring(preprocess.lastIndexOf("<profiler>")+10, preprocess.lastIndexOf("</profiler>"));
-var ctx = document.getElementById("myChart");
-var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: labels(input),
-        datasets: [{
-            label: 'Milliseconds',
-            data: values(input),
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)'
-            ],
 
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                }
-            }]
-        }
-    }
-});
-myChart.destroy(); //This is such an ugly hack, but I am a n00b
+if (typeof myChart !== "undefined") {
+    myChart.destroy();
+}
+
 var typ = "line";
 if(document.getElementById("bar").checked){
   typ = "bar";
 }
 var ctx = document.getElementById("myChart");
-var myChart = new Chart(ctx, {
+myChart = new Chart(ctx, {
     type: typ,
     data: {
         labels: labels(input),
