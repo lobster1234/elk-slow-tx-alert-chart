@@ -6,33 +6,33 @@
 <body>
 <h3> Paste the ELK Alert Email below: </h3>
 <textarea name = "tx" id = "tx" rows="10" cols="100"></textarea>
-<input type="radio" name="typ" id="line" value="line" checked> Line
-<input type="radio" name="typ" id="bar" value="bar"> Bar
-<a href="javascript:chart()">Visualize!</a>
+<a href="javascript:processTextArea()">Visualize!</a>
 <script>
 
-function labels(data){
-  var lines = data.split("\n");
-  var labels = new Array();
-  for(i=0; i <lines.length; i++){
-    if(lines[i].trim().length>0){
-      var label = lines[i].trim().split(" ")[0];
-      labels.push(label);
+function processTextArea(){
+  var entries = new Array();
+  var textarea = document.getElementById("tx").value;
+  var transactions = textarea.split("log realm=");
+  for(i=1;i<transactions.length;i++){
+    var date = transactions[i].substring(transactions[i].lastIndexOf("at=")+4, transactions[i].indexOf(">")-1);
+    var tranlog = transactions[i].substring(transactions[i].lastIndexOf("<tranlog>")+9, transactions[i].lastIndexOf("</tranlog>"));
+    var tranlogdetails = tranlog.substring(tranlog.indexOf("[")+1, tranlog.indexOf("]")-1).split(",");
+    var input = transactions[i].substring(transactions[i].indexOf("<profiler>")+10, transactions[i].lastIndexOf("</profiler>"));
+    var lines = input.split("\n");
+    var lbls = new Array();
+    var vals = new Array();
+    for(j=0; j <lines.length; j++){
+      if(lines[j].trim().length>0){
+        var label = lines[j].trim().split(" ")[0];
+        var value = parseFloat(lines[j].split("[")[1].slice(0,-1).split("/")[0]);
+        lbls.push(label);
+        vals.push(value);
+      }
     }
+    var entry = {"date":date, "labels":lbls, "values":vals, "txdata":tranlogdetails};
+    console.log("Entry is " + JSON.stringify(entry));
+    entries.push(entry);
   }
-  return labels;
-}
-
-function values(data){
-  var lines = data.split("\n");
-  var values = new Array();
-  for(i=0; i <lines.length; i++){
-    if(lines[i].trim().length>0){
-      var value = parseFloat(lines[i].split("[")[1].slice(0,-1).split("/")[0]);
-      values.push(value);
-    }
-  }
-  return values;
 }
 
 </script>
@@ -42,20 +42,31 @@ function values(data){
 var myChart;
 
 function chart(){
-var preprocess = document.getElementById("tx").value;
-var input = preprocess.substring(preprocess.lastIndexOf("<profiler>")+10, preprocess.lastIndexOf("</profiler>"));
+
+var textarea = document.getElementById("tx").value;
+
+var transactions = textarea.split("log realm=");
+
+for(i=1;i<transactions.length;i++){
+  console.log("Here is " + i + " --> " + transactions[i])
+  var date = transactions[i].substring(transactions[i].lastIndexOf("at=")+4, transactions[i].indexOf(">")-1);
+  console.log("Date is " + date);
+  var tranlog = transactions[i].substring(transactions[i].lastIndexOf("<tranlog>")+9, transactions[i].lastIndexOf("</tranlog>"));
+  var tranlogdetails = tranlog.substring(tranlog.indexOf("[")+1, tranlog.indexOf("]")-1).split(",");
+  console.log(tranlogdetails)
+  for(j=0;j<tranlogdetails.length;j++){
+    console.log(tranlogdetails[j])
+  }
+  var input = transactions[i].substring(transactions[i].indexOf("<profiler>")+10, transactions[i].lastIndexOf("</profiler>"));
+}
 
 if (typeof myChart !== "undefined") {
     myChart.destroy();
 }
 
-var typ = "line";
-if(document.getElementById("bar").checked){
-  typ = "bar";
-}
 var ctx = document.getElementById("myChart");
 myChart = new Chart(ctx, {
-    type: typ,
+    type: "line",
     data: {
         labels: labels(input),
         datasets: [{
