@@ -7,10 +7,12 @@
 <h3> Paste the ELK Alert Email below: </h3>
 <textarea name = "tx" id = "tx" rows="10" cols="100"></textarea>
 <a href="javascript:processTextArea()">Visualize!</a>
+<div id="links"></div>
 <script>
+var entries = new Array();
 
 function processTextArea(){
-  var entries = new Array();
+//   var entries = new Array();
   var textarea = document.getElementById("tx").value;
   var transactions = textarea.split("log realm=");
   for(i=1;i<transactions.length;i++){
@@ -33,6 +35,21 @@ function processTextArea(){
     console.log("Entry is " + JSON.stringify(entry));
     entries.push(entry);
   }
+
+  setupLinks();
+}
+
+function setupLinks() {
+    var mydiv = document.getElementById("links");
+    for( var i in entries)  {
+        var entry = entries[i];
+        var aTag = document.createElement('a');
+        aTag.setAttribute('href',"#");
+        aTag.setAttribute('data-entry', i);
+        aTag.innerHTML = entry.date + " " + entry.txdata;
+        mydiv.appendChild(aTag);
+        aTag.addEventListener('click', chart);
+    }
 }
 
 </script>
@@ -41,37 +58,38 @@ function processTextArea(){
 
 var myChart;
 
-function chart(){
+function chart(event){
 
-var textarea = document.getElementById("tx").value;
+// var textarea = document.getElementById("tx").value;
 
-var transactions = textarea.split("log realm=");
+// var transactions = textarea.split("log realm=");
 
-for(i=1;i<transactions.length;i++){
-  console.log("Here is " + i + " --> " + transactions[i])
-  var date = transactions[i].substring(transactions[i].lastIndexOf("at=")+4, transactions[i].indexOf(">")-1);
-  console.log("Date is " + date);
-  var tranlog = transactions[i].substring(transactions[i].lastIndexOf("<tranlog>")+9, transactions[i].lastIndexOf("</tranlog>"));
-  var tranlogdetails = tranlog.substring(tranlog.indexOf("[")+1, tranlog.indexOf("]")-1).split(",");
-  console.log(tranlogdetails)
-  for(j=0;j<tranlogdetails.length;j++){
-    console.log(tranlogdetails[j])
-  }
-  var input = transactions[i].substring(transactions[i].indexOf("<profiler>")+10, transactions[i].lastIndexOf("</profiler>"));
-}
+// for(i=1;i<transactions.length;i++){
+//   console.log("Here is " + i + " --> " + transactions[i])
+//   var date = transactions[i].substring(transactions[i].lastIndexOf("at=")+4, transactions[i].indexOf(">")-1);
+//   console.log("Date is " + date);
+//   var tranlog = transactions[i].substring(transactions[i].lastIndexOf("<tranlog>")+9, transactions[i].lastIndexOf("</tranlog>"));
+//   var tranlogdetails = tranlog.substring(tranlog.indexOf("[")+1, tranlog.indexOf("]")-1).split(",");
+//   console.log(tranlogdetails)
+//   for(j=0;j<tranlogdetails.length;j++){
+//     console.log(tranlogdetails[j])
+//   }
+//   var input = transactions[i].substring(transactions[i].indexOf("<profiler>")+10, transactions[i].lastIndexOf("</profiler>"));
+// }
 
 if (typeof myChart !== "undefined") {
     myChart.destroy();
 }
-
+var entry = event.target.getAttribute("data-entry");
+var chartData = entries[entry];
 var ctx = document.getElementById("myChart");
 myChart = new Chart(ctx, {
     type: "line",
     data: {
-        labels: labels(input),
+        labels: chartData.labels,
         datasets: [{
             label: 'Milliseconds',
-            data: values(input),
+            data: chartData.values,
             backgroundColor: [
               'rgba(255, 99, 132, 0.2)'
             ],
