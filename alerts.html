@@ -3,54 +3,58 @@
 <title>ELK Slow Transaction Alert Chart</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.js"></script>
 <style>
-    html {
-        font-size: 14px;
-    }
-    body {
-        font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    }
-    .input-container {
-        margin-bottom: 1rem;
-    }
-    #tx {
-        display: inline-block;
-    }
-    a:link, a:visited {
-        text-decoration: none;
-    }
-    a:hover {
-        text-decoration: none;
-        cursor: pointer;
-        box-shadow: 2px 2px 2px #ccc;
-    }
-    a:active {
-        text-decoration: none;
-        cursor: pointer;
-        box-shadow: none;
-    }
-    #visualize {
-        border: 1px solid #00aabb;
-        background-color: #33ccbb;
-        color: #fff;
-        padding: 5px;
-        display: inline-block;
-        vertical-align: top;
-        border-radius: 3px;
-    }
-    #links a {
-        display: inline-block;
-        margin-right: 1rem;
-        border: 1px solid #666;
-        background-color: #fff;
-        padding: 3px;
-        margin-bottom: 0.5rem;
-        border-radius: 3px;
-        color: #000;
-    }
-    .chart-container {
-        width: 95%;
-    }
-
+  html {
+    font-size: 14px;
+  }
+  body {
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  }
+  .input-container {
+    margin-bottom: 1rem;
+  }
+  #tx {
+    display: inline-block;
+  }
+  a:link, a:visited {
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 2px 2px 2px #ccc;
+  }
+  a:active {
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: none;
+  }
+  #visualize {
+    border: 1px solid #00aabb;
+    background-color: #33ccbb;
+    color: #fff;
+    padding: 5px;
+    display: inline-block;
+    vertical-align: bottom;
+    border-radius: 3px;
+    margin-bottom: 3px;
+  }
+  #links a {
+    display: inline-block;
+    margin-right: 1rem;
+    border: 1px solid #666;
+    background-color: #fff;
+    padding: 3px;
+    margin-bottom: 0.5rem;
+    border-radius: 3px;
+    color: #000;
+  }
+  #links a.selected {
+    border: 1px solid rgba(255,99,132,1);
+    background-color: rgba(255,99,132,0.2);
+  }
+  .chart-container {
+    width: 95%;
+  }
 </style>
 </head>
 <body>
@@ -64,7 +68,6 @@
 var entries = new Array();
 
 function processTextArea(){
-//   var entries = new Array();
   entries = [];
   var textarea = document.getElementById("tx").value;
   var transactions = textarea.split("log realm=");
@@ -90,29 +93,43 @@ function processTextArea(){
   }
 
   setupLinks();
-  chart(0);
+  document.getElementById('links').children[0].click();
+
 }
 
 function setupLinks() {
-    var mydiv = document.getElementById("links");
-    while(mydiv.firstChild) {
-        mydiv.removeChild(mydiv.firstChild);
-    }
-    for( var i in entries)  {
-        var entry = entries[i];
-        var aTag = document.createElement('a');
-        aTag.setAttribute('data-entry', i);
-        aTag.innerHTML = entry.date + " " + entry.txdata;
-        mydiv.appendChild(aTag);
-        // Add event listener for each link we add
-        aTag.addEventListener('click', function(event){
-            event.preventDefault();
-            var entry = event.target.getAttribute("data-entry");
-            // pass the data-entry we saved so we know which data to get
-            chart(entry);
-            return false;
-        });
-    }
+  var mydiv = document.getElementById("links");
+  while(mydiv.firstChild) {
+      mydiv.removeChild(mydiv.firstChild);
+  }
+  for( var i in entries)  {
+    var entry = entries[i];
+    var aTag = document.createElement('a');
+    aTag.setAttribute('data-entry', i);
+    aTag.innerHTML = entry.date + " " + entry.txdata;
+    mydiv.appendChild(aTag);
+    // Add event listener for each link we add
+    aTag.addEventListener('click', function(event){
+      event.preventDefault();
+      selectLink(event.target);
+      var entry = event.target.getAttribute("data-entry");
+      // pass the data-entry we saved so we know which data to get
+      chart(entry);
+      return false;
+    });
+  }
+}
+
+function selectLink(target) {
+  clearSelectedLinks();
+  target.className = "selected";
+}
+
+function clearSelectedLinks(){
+  var selected = document.getElementsByClassName('selected');
+  for(var el in selected) {
+    selected[el].className = '';
+  }
 }
 
 </script>
@@ -124,57 +141,39 @@ function setupLinks() {
 var myChart;
 
 function chart(entry){
+  if (typeof myChart !== "undefined") {
+      myChart.destroy();
+  }
 
-// var textarea = document.getElementById("tx").value;
-
-// var transactions = textarea.split("log realm=");
-
-// for(i=1;i<transactions.length;i++){
-//   console.log("Here is " + i + " --> " + transactions[i])
-//   var date = transactions[i].substring(transactions[i].lastIndexOf("at=")+4, transactions[i].indexOf(">")-1);
-//   console.log("Date is " + date);
-//   var tranlog = transactions[i].substring(transactions[i].lastIndexOf("<tranlog>")+9, transactions[i].lastIndexOf("</tranlog>"));
-//   var tranlogdetails = tranlog.substring(tranlog.indexOf("[")+1, tranlog.indexOf("]")-1).split(",");
-//   console.log(tranlogdetails)
-//   for(j=0;j<tranlogdetails.length;j++){
-//     console.log(tranlogdetails[j])
-//   }
-//   var input = transactions[i].substring(transactions[i].indexOf("<profiler>")+10, transactions[i].lastIndexOf("</profiler>"));
-// }
-
-if (typeof myChart !== "undefined") {
-    myChart.destroy();
-}
-
-var chartData = entries[entry];
-var ctx = document.getElementById("myChart");
-myChart = new Chart(ctx, {
+  var chartData = entries[entry];
+  var ctx = document.getElementById("myChart");
+  myChart = new Chart(ctx, {
     type: "line",
     data: {
-        labels: chartData.labels,
-        datasets: [{
-            label: 'Milliseconds',
-            data: chartData.values,
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)'
-            ],
+      labels: chartData.labels,
+      datasets: [{
+        label: 'Milliseconds',
+        data: chartData.values,
+        backgroundColor: [
+        'rgba(255, 99, 132, 0.2)'
+        ],
+        borderColor: [
+            'rgba(255,99,132,1)'
+        ],
 
-            borderWidth: 1
-        }]
+        borderWidth: 1
+      }]
     },
     options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                }
-            }]
-        }
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero:true
+          }
+        }]
+      }
     }
-});
+  });
 }
 </script>
 </body>
