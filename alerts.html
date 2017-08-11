@@ -72,7 +72,7 @@ function processTextArea(){
   var textarea = document.getElementById("tx").value;
   var transactions = textarea.split("log realm=");
   for(i=1;i<transactions.length;i++){
-    var date = transactions[i].substring(transactions[i].indexOf("at=")+4, transactions[i].indexOf("UTC"));
+    var date = transactions[i].substring(transactions[i].indexOf("at=")+4, transactions[i].indexOf("UTC")+3);
     var tranlog = transactions[i].substring(transactions[i].lastIndexOf("<tranlog>")+9, transactions[i].lastIndexOf("</tranlog>"));
     var tranlogdetails = tranlog.substring(tranlog.indexOf("[")+1, tranlog.indexOf("]")-1).split(",");
     var input = transactions[i].substring(transactions[i].indexOf("<profiler>")+10, transactions[i].lastIndexOf("</profiler>"));
